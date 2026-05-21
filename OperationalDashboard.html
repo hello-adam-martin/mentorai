@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mentor — Operational Dashboard</title>
+<style>
+  :root{--bg:#0b1220;--panel:#101827;--card:#141e30;--border:rgba(148,163,184,.18);--text:#e5edf7;--muted:#93a4b8;
+    --line:rgba(148,163,184,.22);--blue:#6d7cff;--green:#34d399;--amber:#fbbf24;--red:#fb7185;--purple:#a78bfa;--cyan:#22d3ee;}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:radial-gradient(circle at 50% 0%,rgba(109,124,255,.14),transparent 36%),var(--bg);line-height:1.5}
+  .page{max-width:1140px;margin:0 auto;padding:24px 22px 70px}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .eyebrow{font-size:12px;letter-spacing:.10em;text-transform:uppercase;color:var(--muted)}
+  h1{margin:5px 0 0;font-size:24px;letter-spacing:-.03em}
+  .live{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);margin-top:6px}
+  .ld{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.5)}70%{box-shadow:0 0 0 7px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+  .clock{font-variant-numeric:tabular-nums;color:#cdd7e6;font-weight:600}
+  .mock{font-size:11px;color:var(--amber);border:1px solid rgba(251,191,36,.4);background:rgba(251,191,36,.08);border-radius:999px;padding:4px 11px}
+
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:20px}
+  @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .kpi .n{font-size:25px;font-weight:800;letter-spacing:-.02em}
+  .kpi .l{font-size:12px;color:var(--muted);margin-top:2px}
+  .kpi .n .u{font-size:13px;color:var(--muted);font-weight:600}
+  .kpi.alert .n{color:#fecaca}.kpi.warn .n{color:#fde68a}.kpi.good .n{color:#bbf7d0}
+
+  .cols{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:14px}
+  @media(max-width:900px){.cols{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px}
+  .panel h2{font-size:14px;margin:0 0 12px;letter-spacing:-.01em;display:flex;justify-content:space-between;align-items:center}
+  .panel h2 .c{font-size:11px;color:var(--muted);font-weight:600;border:1px solid var(--border);border-radius:999px;padding:2px 8px}
+
+  .q{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .q:last-child{border-bottom:none}
+  .q .meta{flex:1;min-width:0}
+  .q .t{font-weight:650;font-size:14px}
+  .q .s{font-size:12px;color:var(--muted);margin-top:2px}
+  .q .amt{font-weight:700;color:#fde68a;white-space:nowrap}
+  .act{display:flex;gap:6px}
+  .btn{border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);border-radius:9px;padding:6px 11px;font-size:12px;font-weight:700;cursor:pointer}
+  .btn.ok{border:none;background:var(--green);color:#06281c}
+  .btn.no{border-color:rgba(251,113,133,.4);color:#fecdd3}
+
+  .att{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .att:last-child{border-bottom:none}
+  .dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0}
+  .dot.red{background:var(--red)}.dot.amber{background:var(--amber)}.dot.blue{background:var(--blue)}
+  .att .s{color:var(--muted);font-size:12px}
+
+  .pr{margin:11px 0}
+  .pr .top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
+  .pr .top .v{color:#cdd7e6;font-weight:650}
+  .track{height:9px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden}
+  .fill{height:100%;border-radius:6px}
+
+  .agent{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .agent:last-child{border-bottom:none}
+  .agent .nm{font-weight:650;width:130px;flex-shrink:0}
+  .agent .doing{color:var(--muted);font-size:12.5px;flex:1}
+  .tier{font-size:10.5px;border-radius:999px;padding:2px 7px;border:1px solid var(--border);color:var(--muted)}
+  .tier.auto{color:#a7f3d0;border-color:rgba(52,211,153,.4)}.tier.recommend{color:#c7ccff;border-color:rgba(109,124,255,.4)}.tier.idle{opacity:.6}
+
+  .feed{margin-top:14px}
+  .fi{display:flex;gap:12px;font-size:13px;padding:7px 0;border-bottom:1px solid var(--line)}
+  .fi:last-child{border-bottom:none}
+  .fi .tm{color:var(--muted);font-variant-numeric:tabular-nums;width:54px;flex-shrink:0}
+  .fi .ag{font-weight:650}
+  .fi .ob{color:var(--muted)}
+  .handled{display:flex;gap:18px;align-items:baseline;margin-top:6px;flex-wrap:wrap}
+  .handled .big{font-size:30px;font-weight:800;color:#bbf7d0}
+  .handled .sub{color:var(--muted);font-size:13px}
+  footer{margin-top:26px;border-top:1px solid var(--border);padding-top:18px;color:var(--muted);font-size:12.5px;text-align:center}
+  a{color:#c7ccff}
+</style>
+</head>
+<body>
+<main class="page">
+  <div class="top">
+    <div>
+      <div class="eyebrow">Mentor · Operational Dashboard</div>
+      <h1>Northside Services — live operations</h1>
+      <div class="live"><span class="ld"></span> Mentor is running · <span class="clock" id="clock">--:--:--</span> · 4 agents active</div>
+    </div>
+    <div class="mock">Illustrative — example data showing Mentor running on an engine</div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi warn"><div class="n" id="k_att">3</div><div class="l">Need your attention</div></div>
+    <div class="kpi warn"><div class="n" id="k_appr">2</div><div class="l">Pending approvals</div></div>
+    <div class="kpi good"><div class="n">4</div><div class="l">Agents active</div></div>
+    <div class="kpi good"><div class="n">128 <span class="u">today</span></div><div class="l">Handled automatically</div></div>
+    <div class="kpi"><div class="n">6 <span class="u">today</span></div><div class="l">Escalated to you</div></div>
+  </div>
+
+  <div class="cols">
+    <div class="panel">
+      <h2>Approvals queue <span class="c" id="qc">2 waiting</span></h2>
+      <div id="queue">
+        <div class="q">
+          <div class="meta"><div class="t">Issue refund</div><div class="s">Comms agent · serves Customer Experience · waiting 41 min · → Owner</div></div>
+          <div class="amt">$120</div>
+          <div class="act"><button class="btn ok" onclick="resolve(this)">Approve</button><button class="btn no" onclick="resolve(this)">Deny</button></div>
+        </div>
+        <div class="q">
+          <div class="meta"><div class="t">Dispatch contractor</div><div class="s">Ops agent · serves Customer Experience · waiting 12 min · → Owner</div></div>
+          <div class="amt">$380</div>
+          <div class="act"><button class="btn ok" onclick="resolve(this)">Approve</button><button class="btn no" onclick="resolve(this)">Deny</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Needs attention <span class="c">3</span></h2>
+      <div class="att"><span class="dot red"></span><div><div>Customer #1043 — unresolved issue, <b>review risk rising</b></div><div class="s">Comms agent drafted a response · escalated 9 min ago</div></div></div>
+      <div class="att"><span class="dot amber"></span><div><div>Job #221 — running late, ETA slipping</div><div class="s">Ops agent re-sequencing today's schedule</div></div></div>
+      <div class="att"><span class="dot amber"></span><div><div>Refund approval waiting 41 min</div><div class="s">over the auto limit — needs your sign-off</div></div></div>
+    </div>
+  </div>
+
+  <div class="cols">
+    <div class="panel">
+      <h2>Operational pressure</h2>
+      <div class="pr"><div class="top"><span>Today's workload</span><span class="v">72%</span></div><div class="track"><div class="fill" style="width:72%;background:var(--amber)"></div></div></div>
+      <div class="pr"><div class="top"><span>Response queue</span><span class="v">3 waiting</span></div><div class="track"><div class="fill" style="width:30%;background:var(--green)"></div></div></div>
+      <div class="pr"><div class="top"><span>Overdue tasks</span><span class="v">1</span></div><div class="track"><div class="fill" style="width:18%;background:var(--amber)"></div></div></div>
+      <div class="pr"><div class="top"><span>Review risk</span><span class="v">2 at risk</span></div><div class="track"><div class="fill" style="width:55%;background:var(--red)"></div></div></div>
+    </div>
+    <div class="panel">
+      <h2>Agent activity</h2>
+      <div class="agent"><span class="nm">Comms agent</span><span class="doing">drafting a reply to Customer #1051</span><span class="tier recommend">recommend</span></div>
+      <div class="agent"><span class="nm">Ops agent</span><span class="doing">scheduling tomorrow's jobs</span><span class="tier auto">auto</span></div>
+      <div class="agent"><span class="nm">Intelligence agent</span><span class="doing">flagged a recurring "missed reminder" pattern</span><span class="tier auto">auto</span></div>
+      <div class="agent"><span class="nm">Comms agent #2</span><span class="doing">idle — waiting for work</span><span class="tier idle">idle</span></div>
+    </div>
+  </div>
+
+  <div class="panel feed">
+    <h2>Decision feed <span class="c">last hour</span></h2>
+    <div class="fi"><span class="tm">10:42</span><div><span class="ag">Comms agent</span> answered a routine question <span class="ob">· auto · serves Customer Experience</span></div></div>
+    <div class="fi"><span class="tm">10:39</span><div><span class="ag">Ops agent</span> created a follow-up task <span class="ob">· auto · serves Efficiency</span></div></div>
+    <div class="fi"><span class="tm">10:31</span><div><span class="ag">Mentor</span> escalated a refund over the limit <span class="ob">· → Owner · serves Customer Experience</span></div></div>
+    <div class="fi"><span class="tm">10:18</span><div><span class="ag">Intelligence agent</span> predicted churn risk for Customer #1043 <span class="ob">· informs Customer Experience</span></div></div>
+    <div class="fi"><span class="tm">10:05</span><div><span class="ag">Ops agent</span> rebalanced cleaner load after a late start <span class="ob">· recommend → approved by Owner</span></div></div>
+    <div class="handled">
+      <span class="big" id="pct">95%</span>
+      <span class="sub">of today's work handled without you — <b>128</b> actions automatic, <b>6</b> escalated.</span>
+    </div>
+  </div>
+
+  <footer>
+    Illustrative mockup with example data. Once Mentor runs on an engine, these panels populate live from the operating model you defined.<br>
+    <a href="./index.html">← Back to Mentor</a> · <a href="./SetupWizard.html">Build your model</a>
+  </footer>
+</main>
+
+<script>
+  // live clock — purely cosmetic, to make the mockup feel "running"
+  function tick(){const d=new Date();document.getElementById("clock").textContent=d.toTimeString().slice(0,8);}
+  tick(); setInterval(tick,1000);
+  // approve/deny removes the row and updates the counters (mock interaction)
+  function resolve(btn){
+    const row=btn.closest(".q"); row.style.opacity=".35"; row.querySelector(".act").innerHTML='<span class="s">done ✓</span>';
+    const q=document.getElementById("queue").querySelectorAll(".q");
+    let left=0; q.forEach(r=>{if(r.style.opacity!==".35")left++;});
+    document.getElementById("qc").textContent=left+" waiting";
+    document.getElementById("k_appr").textContent=left;
+  }
+</script>
+</body>
+</html>

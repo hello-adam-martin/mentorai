@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mentor — Model Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+<style>
+  :root{--bg:#0b1220;--panel:#101827;--card:#141e30;--border:rgba(148,163,184,.18);--text:#e5edf7;--muted:#93a4b8;
+    --line:rgba(148,163,184,.28);--blue:#6d7cff;--green:#34d399;--amber:#fbbf24;--red:#fb7185;--purple:#a78bfa;--cyan:#22d3ee;}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:radial-gradient(circle at 50% 0%,rgba(109,124,255,.16),transparent 34%),var(--bg);line-height:1.55}
+  .page{max-width:1100px;margin:0 auto;padding:30px 22px 80px}
+  .eyebrow{font-size:12px;letter-spacing:.10em;text-transform:uppercase;color:var(--muted)}
+  h1{margin:6px 0 0;font-size:26px;letter-spacing:-.03em}
+  p.intro{color:var(--muted);max-width:740px;margin:10px 0 0}
+  .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0 6px}
+  .filebtn{color:#fff;background:linear-gradient(135deg,var(--blue),#7c3aed);border:none;padding:11px 15px;border-radius:13px;font-weight:700;font-size:14px;cursor:pointer}
+  .filebtn input{display:none}
+  #drop{margin-top:12px;border:1.5px dashed var(--line);border-radius:16px;padding:22px;text-align:center;color:var(--muted);background:rgba(255,255,255,.02)}
+  #drop.hot{border-color:var(--blue);background:rgba(109,124,255,.10);color:var(--text)}
+  .legend{font-size:11.5px;color:var(--muted)}
+  .err{color:#fecdd3;background:rgba(251,113,133,.10);border:1px solid rgba(251,113,133,.4);padding:10px 12px;border-radius:10px;margin-top:12px;font-size:13px}
+  .grid{display:grid;gap:14px;margin-top:18px}
+  .kpis{grid-template-columns:repeat(6,1fr)}
+  @media(max-width:820px){.kpis{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:520px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .kpi .n{font-size:26px;font-weight:800;letter-spacing:-.02em}
+  .kpi .l{font-size:12px;color:var(--muted);margin-top:2px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+  @media(max-width:820px){.cols{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px}
+  .panel h2{font-size:15px;margin:0 0 12px;letter-spacing:-.01em}
+  .row{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;padding:5px 0;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:none}
+  .row .v{color:#cdd7e6;font-weight:650}
+  .barline{height:12px;border-radius:7px;background:rgba(255,255,255,.06);overflow:hidden;display:flex}
+  .barline span{height:100%}
+  .seg-auto{background:var(--cyan)}.seg-recommend{background:var(--blue)}.seg-approve{background:var(--purple)}
+  .keys{display:flex;gap:14px;font-size:11.5px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+  .key{display:inline-flex;align-items:center;gap:5px}
+  .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .wt{margin:8px 0}
+  .wt .top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px}
+  .wt .track{height:9px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden}
+  .wt .fill{height:100%;background:linear-gradient(90deg,var(--blue),#7c3aed)}
+  .layerstrip{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+  .lchip{font-size:11px;padding:5px 9px;border-radius:999px;border:1px solid var(--border);color:var(--muted)}
+  .lchip.defined{color:#bbf7d0;border-color:rgba(52,211,153,.45);background:rgba(52,211,153,.10)}
+  .lchip.planned{color:#fde68a;border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.10)}
+  .lchip.draft{color:#c7ccff;border-color:rgba(109,124,255,.45);background:rgba(109,124,255,.10)}
+  .vbig{border-radius:14px;padding:14px 16px;margin-top:14px;font-size:14px;font-weight:650}
+  .vbig.ok{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.4);color:#bbf7d0}
+  .vbig.bad{background:rgba(251,113,133,.10);border:1px solid rgba(251,113,133,.4);color:#fecdd3}
+  .vbig ul{margin:8px 0 0;padding-left:18px;font-weight:400;font-size:12.5px;line-height:1.5}
+  .muted{color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<main class="page">
+  <div class="eyebrow">Mentor · Model Dashboard</div>
+  <h1 id="title">Model Dashboard</h1>
+  <p class="intro">An at-a-glance health check of your operating model, computed from the files. Pick the folder (or drag it on) to see counts, autonomy posture, weight balance, and whether everything validates. Re-pick after edits.</p>
+  <div class="bar">
+    <label class="filebtn">Select folder<input id="picker" type="file" webkitdirectory directory multiple></label>
+    <span class="legend">Runs entirely in your browser — nothing is uploaded.</span>
+  </div>
+  <div id="drop">Drop the business / template folder here</div>
+  <div id="error"></div>
+  <div id="dash"></div>
+</main>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const dec=s=>String(s==null?"":s).replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&amp;/g,"&");
+const OPS_OK=new Set([">=","<=",">","<","=="]);
+const TIERS_OK=new Set(["auto","recommend","approve"]);
+const BIND_T=new Set(["durable_context","identity","fact_memory","knowledge_store","procedure","agent","schedule","enforcement","channel","engine"]);
+const BIND_M=new Set(["at_startup","on_demand","scheduled","event"]);
+let _stats=null;
+
+/* ---------- input ---------- */
+$("#picker").addEventListener("change",e=>{
+  const files=[...e.target.files].filter(f=>f.name.toLowerCase().endsWith(".md"));
+  Promise.all(files.map(f=>f.text().then(t=>({path:f.webkitRelativePath||f.name,text:t})))).then(build).catch(showErr);
+});
+const drop=$("#drop");
+["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("hot");}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("hot");}));
+drop.addEventListener("drop",async e=>{e.preventDefault();const items=[...e.dataTransfer.items].map(i=>i.webkitGetAsEntry&&i.webkitGetAsEntry()).filter(Boolean);const out=[];try{for(const it of items)await gather(it,"",out);build(out);}catch(err){showErr(err);}});
+async function gather(entry,prefix,out){
+  if(entry.isFile){ if(entry.name.toLowerCase().endsWith(".md")){const file=await new Promise((r,j)=>entry.file(r,j));out.push({path:prefix+entry.name,text:await file.text()});} }
+  else if(entry.isDirectory){ const rd=entry.createReader();let b;do{b=await new Promise((r,j)=>rd.readEntries(r,j));for(const e of b)await gather(e,prefix+entry.name+"/",out);}while(b.length); }
+}
+function showErr(e){ $("#error").innerHTML=`<div class="err">Couldn't read the folder: ${esc(e&&e.message||e)}. Try the Select folder button.</div>`; }
+
+/* ---------- parse + tree ---------- */
+function parse(text){let fm={};const m=text.match(/^---\n([\s\S]*?)\n---/);if(m){try{fm=jsyaml.load(m[1])||{};}catch(e){fm={__error:e.message};}}return {fm};}
+function build(files){
+  $("#error").innerHTML="";
+  if(!files.length){showErr({message:"no .md files found"});return;}
+  if(typeof jsyaml==="undefined"){showErr({message:"YAML parser (CDN) didn't load"});return;}
+  const root={dirs:{},files:[]};
+  for(const f of files){const segs=f.path.split("/").filter(Boolean);let n=root;for(let i=0;i<segs.length-1;i++){const s=segs[i];n.dirs[s]=n.dirs[s]||{name:s,dirs:{},files:[]};n=n.dirs[s];}n.files.push(parse(f.text));}
+  const tpl=findRoot(root)||root;
+  render(tpl);
+}
+function findRoot(node){if(Object.keys(node.dirs).some(k=>/^\d+_/.test(k)))return node;for(const k in node.dirs){const r=findRoot(node.dirs[k]);if(r)return r;}return null;}
+function allFms(dir,acc){acc=acc||[];dir.files.forEach(f=>f.fm&&acc.push(f.fm));Object.values(dir.dirs).forEach(d=>allFms(d,acc));return acc;}
+
+/* ---------- compute ---------- */
+function computeStats(tpl){
+  const all=allFms(tpl).filter(d=>d&&typeof d==="object");
+  const of=t=>all.filter(d=>d.mentor_node===t);
+  const objectives=of("objective"), actions=of("action");
+  const tiers={auto:0,recommend:0,approve:0}; actions.forEach(a=>{if(tiers[a.tier]!=null)tiers[a.tier]++;});
+  const strat=all.find(d=>d.mentor_layer==="strategic")||{};
+  const weightTarget=(strat.weighting&&strat.weighting.weights_sum_to)||1;
+  const weightSum=Math.round(objectives.reduce((a,o)=>a+(+o.weight||0),0)*1000)/1000;
+  const struct=all.find(d=>d.mentor==="structure")||{layers:[]};
+  const layers=(struct.layers||[]).slice().sort((a,b)=>a.index-b.index);
+  const hl=all.find(d=>d.mentor_node==="hard_limits"); const escn=all.find(d=>d.mentor_node==="escalation");
+  const audit=all.find(d=>d.mentor_node==="audit");
+  return {
+    layers, layersDefined:layers.filter(l=>l.status==="defined").length, layersTotal:layers.length,
+    objectives:objectives.length, actions:actions.length, agents:of("agent").length,
+    objectTypes:of("object_type").length, operators:of("operator").length, approvers:of("approver").length,
+    tiers, weightSum, weightTarget, objectiveList:objectives.map(o=>({id:o.id,label:o.label,weight:+o.weight||0})),
+    hardLimits:(hl&&(hl.hard_limits||[]).length)||0, escalations:(escn&&(escn.escalation||[]).length)||0,
+    auditOn:!!(audit&&audit.log_all_actions===true&&audit.require_reasoning===true),
+    patterns:of("pattern").length, predictions:of("prediction").length, simulations:of("simulation").length,
+    nodeFiles:all.filter(d=>d.mentor_node||d.mentor_layer||d.mentor).length,
+    issues:validate(tpl)
+  };
+}
+
+/* ---------- validation (mirrors MissionControl / SpecFormat) ---------- */
+function validate(tpl){
+  const all=allFms(tpl).filter(d=>d&&typeof d==="object");const issues=[];
+  const idset=t=>new Set(all.filter(d=>d.mentor_node===t).map(d=>d.id));
+  const obj=idset("objective"),act=idset("action"),appr=idset("approver"),ot=idset("object_type"),dom=idset("domain");
+  all.forEach(d=>{if(d.__error)issues.push("YAML parse error: "+d.__error);});
+  const objs=all.filter(d=>d.mentor_node==="objective");
+  if(objs.length){const strat=all.find(d=>d.mentor_layer==="strategic")||{};const tgt=(strat.weighting&&strat.weighting.weights_sum_to)||1;
+    const ws=Math.round(objs.reduce((a,o)=>a+(+o.weight||0),0)*1000)/1000;
+    if(Math.abs(ws-tgt)>1e-6)issues.push(`Strategic — objective weights sum to ${ws}, expected ${tgt}`);
+    const seen=new Set();objs.forEach(o=>{if(!o.id)issues.push("Strategic — objective missing id");else if(seen.has(o.id))issues.push(`Strategic — duplicate objective "${o.id}"`);else seen.add(o.id);
+      if(typeof o.weight!=="number")issues.push(`Strategic — "${o.id}" weight not a number`);
+      if(!(o.targets&&o.targets.length))issues.push(`Strategic — "${o.id}" has no target`);
+      else o.targets.forEach(t=>{if(!OPS_OK.has(t.operator))issues.push(`Strategic — "${o.id}" bad operator "${t.operator}"`);});});}
+  all.filter(d=>d.mentor_node==="action").forEach(a=>{if(!TIERS_OK.has(a.tier))issues.push(`Governance — action "${a.id}" bad tier "${a.tier}"`);
+    if(a.tier==="approve"&&!appr.has(a.approver))issues.push(`Governance — "${a.id}" approver "${a.approver}" not found`);
+    (a.serves||[]).forEach(s=>{if(!obj.has(s))issues.push(`Governance — "${a.id}" serves unknown "${s}"`);});
+    if(a.escalates_to&&!act.has(a.escalates_to))issues.push(`Governance — "${a.id}" escalates_to unknown "${a.escalates_to}"`);});
+  if(all.find(d=>d.mentor_layer==="governance")){if(!appr.size)issues.push("Governance — no approvers");
+    const hl=all.find(d=>d.mentor_node==="hard_limits");if(!(hl&&(hl.hard_limits||[]).length))issues.push("Governance — hard_limits empty");
+    const au=all.find(d=>d.mentor_node==="audit");if(au&&au.log_all_actions!==true)issues.push("Governance — audit.log_all_actions must be true");if(au&&au.require_reasoning!==true)issues.push("Governance — audit.require_reasoning must be true");}
+  all.filter(d=>d.mentor_node==="object_type").forEach(t=>(t.relationships||[]).forEach(r=>{if(!ot.has(r&&r.to))issues.push(`Objects — "${t.id}" relationship to unknown "${r&&r.to}"`);}));
+  all.filter(d=>d.mentor_node==="agent").forEach(a=>{(a.allowed_actions||[]).forEach(x=>{if(!act.has(x))issues.push(`Domain — agent "${a.id}" action "${x}" unknown`);});(a.objects||[]).forEach(x=>{if(!ot.has(x))issues.push(`Domain — agent "${a.id}" object "${x}" unknown`);});if(a.domain&&!dom.has(a.domain))issues.push(`Domain — agent "${a.id}" domain "${a.domain}" unknown`);});
+  all.filter(d=>d.mentor_node==="operator").forEach(o=>(o.fulfils_approvers||[]).forEach(x=>{if(!appr.has(x))issues.push(`Human — operator "${o.id}" approver "${x}" unknown`);}));
+  all.filter(d=>d.mentor_node==="pattern").forEach(p=>(p.watches||[]).forEach(x=>{if(!ot.has(x))issues.push(`Learning — pattern "${p.id}" watches unknown "${x}"`);}));
+  all.filter(d=>d.mentor_node==="prediction").forEach(p=>(p.informs||[]).forEach(x=>{if(!obj.has(x))issues.push(`Learning — prediction "${p.id}" informs unknown "${x}"`);}));
+  all.filter(d=>d.mentor_node==="simulation").forEach(s=>{(s.scores_against||[]).forEach(x=>{if(!obj.has(x))issues.push(`Learning — simulation "${s.id}" scores unknown "${x}"`);});(s.affects_actions||[]).forEach(x=>{if(!act.has(x))issues.push(`Learning — simulation "${s.id}" affects unknown "${x}"`);});});
+  const st=all.find(d=>d&&d.mentor==="structure");
+  if(st){const L=st.layers||[];const byId={};L.forEach(l=>byId[l.id]=l);const owns={};L.forEach(l=>(l.owns||[]).forEach(ns=>owns[ns]=1));
+    if(new Set(L.map(l=>l.id)).size!==L.length)issues.push("Structure — duplicate layer ids");
+    const idx=L.map(l=>l.index).slice().sort((a,b)=>a-b);if(JSON.stringify(idx)!==JSON.stringify(L.map((_,i)=>i+1)))issues.push("Structure — indices not contiguous");
+    L.forEach(l=>{(l.inputs_from||[]).forEach(s=>{if(!byId[s])issues.push(`Structure — ${l.id}.inputs_from unknown "${s}"`);else if(byId[s].index>=l.index)issues.push(`Structure — ${l.id}.inputs_from "${s}" must be above`);});
+      (l.outputs_to||[]).forEach(o=>{const t=typeof o==="string"?o:o&&o.layer;if(!byId[t])issues.push(`Structure — ${l.id}.outputs_to unknown "${t}"`);else if(byId[t].index<=l.index)issues.push(`Structure — ${l.id}.outputs_to "${t}" must be below`);});
+      (l.references||[]).forEach(ns=>{if(!owns[ns])issues.push(`Structure — ${l.id}.references "${ns}" unowned`);});
+      (l.binding||[]).forEach(b=>{if(!BIND_T.has(b.target))issues.push(`Structure — ${l.id} bad binding target "${b.target}"`);if(!BIND_M.has(b.mode))issues.push(`Structure — ${l.id} bad binding mode "${b.mode}"`);});});}
+  else issues.push("Structure — _meta/Structure.md not found");
+  return issues;
+}
+
+/* ---------- render ---------- */
+function render(tpl){
+  const biz=allFms(tpl).find(d=>d&&d.mentor==="business");
+  const name=(biz&&biz.name&&biz.name!=="<Business Name>"&&biz.name)||"";
+  $("#title").textContent=name?name+" — Model Dashboard":"Mentor — Model Dashboard";
+  const s=_stats=computeStats(tpl);
+  const kpi=(n,l)=>`<div class="kpi"><div class="n">${n}</div><div class="l">${l}</div></div>`;
+  const totalActions=s.actions||1;
+  const seg=(k)=>s.tiers[k]?`<span class="seg-${k}" style="width:${(s.tiers[k]/totalActions*100).toFixed(1)}%"></span>`:"";
+  const wmax=Math.max(0.0001,...s.objectiveList.map(o=>o.weight));
+  const layerStrip=s.layers.map(l=>`<span class="lchip ${l.status}">${esc(l.id)}</span>`).join("");
+  const objBars=s.objectiveList.map(o=>`<div class="wt"><div class="top"><span>${esc(o.label||o.id)}</span><span class="v">${o.weight}</span></div><div class="track"><div class="fill" style="width:${(o.weight/wmax*100).toFixed(0)}%"></div></div></div>`).join("")||`<div class="muted">No objectives defined.</div>`;
+  const vbig=s.issues.length
+    ? `<div class="vbig bad"><b>&#9888; ${s.issues.length} validation issue${s.issues.length>1?"s":""}</b><ul>${s.issues.slice(0,12).map(i=>`<li>${esc(i)}</li>`).join("")}${s.issues.length>12?`<li>…and ${s.issues.length-12} more</li>`:""}</ul></div>`
+    : `<div class="vbig ok">&#10003; <b>Valid</b> — every check passes.</div>`;
+
+  $("#dash").innerHTML=`
+    <div class="grid kpis">
+      ${kpi(`${s.layersDefined} / ${s.layersTotal||7}`,"Layers defined")}
+      ${kpi(s.objectives,"Objectives")}
+      ${kpi(s.actions,"Actions")}
+      ${kpi(s.agents,"Agents")}
+      ${kpi(s.objectTypes,"Object types")}
+      ${kpi(s.operators,"Operators")}
+    </div>
+    ${vbig}
+    <div class="cols">
+      <div class="panel">
+        <h2>Autonomy posture</h2>
+        <div class="barline">${seg("auto")}${seg("recommend")}${seg("approve")}</div>
+        <div class="keys">
+          <span class="key"><span class="sw" style="background:var(--cyan)"></span>auto · ${s.tiers.auto}</span>
+          <span class="key"><span class="sw" style="background:var(--blue)"></span>recommend · ${s.tiers.recommend}</span>
+          <span class="key"><span class="sw" style="background:var(--purple)"></span>approve · ${s.tiers.approve}</span>
+        </div>
+        <div class="muted" style="margin-top:8px">Cautious models lean toward recommend / approve; actions earn <b>auto</b> over time.</div>
+      </div>
+      <div class="panel">
+        <h2>Objective weights &nbsp; <span class="muted">(sum ${s.weightSum}${Math.abs(s.weightSum-s.weightTarget)<1e-6?" ✓":` — expected ${s.weightTarget}`})</span></h2>
+        ${objBars}
+      </div>
+    </div>
+    <div class="cols">
+      <div class="panel">
+        <h2>Governance coverage</h2>
+        <div class="row"><span>Approvers</span><span class="v">${s.approvers}</span></div>
+        <div class="row"><span>Hard limits</span><span class="v">${s.hardLimits}</span></div>
+        <div class="row"><span>Escalation rules</span><span class="v">${s.escalations}</span></div>
+        <div class="row"><span>Audit (log + reasoning)</span><span class="v">${s.auditOn?"on ✓":"off"}</span></div>
+      </div>
+      <div class="panel">
+        <h2>Learning &amp; layers</h2>
+        <div class="row"><span>Patterns · Predictions · Simulations</span><span class="v">${s.patterns} · ${s.predictions} · ${s.simulations}</span></div>
+        <div class="row"><span>Node files</span><span class="v">${s.nodeFiles}</span></div>
+        <div style="margin-top:10px" class="muted">Layer status</div>
+        <div class="layerstrip">${layerStrip||'<span class="muted">no structure file</span>'}</div>
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>

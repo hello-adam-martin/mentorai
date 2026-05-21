@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mentor — the operational brain for your business</title>
+<style>
+  :root{
+    --bg:#0b1220; --panel:#101827; --card:#141e30; --border:rgba(148,163,184,.18);
+    --text:#e5edf7; --muted:#93a4b8; --line:rgba(148,163,184,.22);
+    --blue:#6d7cff; --purple:#7c3aed; --green:#34d399; --amber:#fbbf24; --pink:#f472b6; --cyan:#22d3ee; --red:#fb7185;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:radial-gradient(1100px 520px at 50% -8%,rgba(109,124,255,.20),transparent 60%),var(--bg);
+    line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 24px}
+  .eyebrow{font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+
+  /* nav */
+  nav{display:flex;justify-content:space-between;align-items:center;padding:22px 0}
+  .brand{font-weight:800;letter-spacing:-.02em;font-size:18px;display:flex;align-items:center;gap:9px}
+  .brand .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple))}
+  .navlinks{display:flex;gap:20px;font-size:14px;color:var(--muted)}
+  .navlinks a{text-decoration:none}.navlinks a:hover{color:var(--text)}
+  @media(max-width:640px){.navlinks{display:none}}
+
+  /* hero */
+  .hero{padding:54px 0 30px;text-align:center}
+  .hero h1{font-size:clamp(40px,7vw,76px);letter-spacing:-.05em;line-height:.98;margin:14px 0 0;
+    background:linear-gradient(180deg,#fff,#b9c2da);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero .tag{font-size:clamp(18px,2.4vw,24px);color:#cdd7e6;margin:14px auto 0;max-width:720px;font-weight:600}
+  .hero p.sub{color:var(--muted);max-width:680px;margin:18px auto 0;font-size:16px}
+  .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+  .btn{padding:13px 20px;border-radius:14px;font-weight:700;font-size:15px;text-decoration:none;border:1px solid var(--border);
+    background:rgba(255,255,255,.04);color:var(--text);transition:.15s}
+  .btn:hover{transform:translateY(-1px);border-color:rgba(148,163,184,.4)}
+  .btn.primary{border:none;background:linear-gradient(135deg,var(--blue),var(--purple))}
+  .btn.primary:hover{filter:brightness(1.08)}
+
+  section{padding:44px 0}
+  h2{font-size:clamp(26px,3.4vw,36px);letter-spacing:-.03em;margin:0 0 6px;text-align:center}
+  .lede{color:var(--muted);text-align:center;max-width:680px;margin:0 auto 26px;font-size:16px}
+
+  .grid{display:grid;gap:16px}
+  .g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:820px){.g3,.g2{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015));border:1px solid var(--border);
+    border-radius:18px;padding:20px}
+  .card h3{margin:0 0 6px;font-size:17px;letter-spacing:-.01em}
+  .card p{margin:0;color:var(--muted);font-size:14.5px}
+
+  /* problem band */
+  .band{background:var(--panel);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .band .quote{font-size:clamp(22px,3vw,30px);font-weight:700;letter-spacing:-.02em;text-align:center;max-width:760px;margin:0 auto;color:#eaf0fa}
+  .band .quote span{color:var(--muted)}
+
+  /* layer stack */
+  .stack{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+  .layer{display:flex;align-items:center;gap:16px;border:1px solid var(--border);border-radius:16px;padding:14px 16px;
+    background:var(--card)}
+  .layer .num{flex-shrink:0;width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+    font-weight:800;background:rgba(255,255,255,.05);border:1px solid var(--border)}
+  .layer .lt{font-weight:700;font-size:15.5px}
+  .layer .ld{color:var(--muted);font-size:14px}
+  .layer .who{margin-left:auto;font-size:11px;color:var(--muted);border:1px solid var(--border);border-radius:999px;
+    padding:3px 9px;white-space:nowrap}
+  @media(max-width:640px){.layer .who{display:none}}
+
+  /* launcher */
+  .launch .card{display:flex;flex-direction:column;gap:10px}
+  .launch .card .btn{align-self:flex-start;margin-top:6px}
+  .docs{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-top:18px;font-size:14px;color:var(--muted)}
+  .docs a{text-decoration:none;border-bottom:1px dashed var(--line);padding-bottom:1px}
+  .docs a:hover{color:var(--text)}
+
+  footer{border-top:1px solid var(--border);margin-top:30px;padding:26px 0 50px;color:var(--muted);font-size:13px;text-align:center}
+  .pill{display:inline-block;font-size:11px;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:4px 11px;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <div class="brand"><span class="dot"></span> Mentor</div>
+    <div class="navlinks">
+      <a href="#how">How it works</a>
+      <a href="#layers">The model</a>
+      <a href="#why">Why it's different</a>
+      <a href="#start">Get started</a>
+    </div>
+  </nav>
+</div>
+
+<header class="hero wrap">
+  <div class="eyebrow">Autonomous operations platform</div>
+  <h1>The operational brain<br>for your business.</h1>
+  <p class="tag">Most software stores information and waits for you to act. Mentor understands what's happening across your operation, coordinates the work, and flags what needs you.</p>
+  <p class="sub">It's a living layer that sits across the whole business — handling the routine, escalating the important, learning as it goes, and keeping people firmly in control.</p>
+  <div class="cta">
+    <a class="btn primary" href="./SetupWizard.html">Build your model →</a>
+    <a class="btn" href="./OperationalDashboard.html">See it in action</a>
+  </div>
+  <div class="pill">Engine-agnostic · runs on the AI engine you choose · no lock-in</div>
+</header>
+
+<section class="band">
+  <div class="wrap" style="padding:46px 24px">
+    <p class="quote">Your tools don't run your business. <span>You do — chasing updates, making the calls, holding it all in your head. As you grow, so does the chaos.</span></p>
+  </div>
+</section>
+
+<section id="how" class="wrap">
+  <h2>What Mentor does</h2>
+  <p class="lede">Think of it less like software and more like a capable operations lead that never sleeps — one that works inside your rules.</p>
+  <div class="grid g3">
+    <div class="card"><h3>Coordinates</h3><p>Routes work, chases the follow-ups, and keeps the moving parts in sync so nothing slips.</p></div>
+    <div class="card"><h3>Remembers</h3><p>Builds lasting memory of your customers, jobs, quirks, and what worked last time — institutional knowledge that sticks.</p></div>
+    <div class="card"><h3>Escalates</h3><p>Handles the routine on its own and brings the important decisions to the right person, fast.</p></div>
+    <div class="card"><h3>Reasons</h3><p>Weighs options against what your business actually cares about — not just the loudest request.</p></div>
+    <div class="card"><h3>Learns</h3><p>Spots the recurring problems and fixes the cause, so the same issue stops coming back.</p></div>
+    <div class="card"><h3>Stays in its lane</h3><p>Acts only within the limits you set, logs why it did everything, and never crosses your bright lines.</p></div>
+  </div>
+</section>
+
+<section id="layers" class="wrap">
+  <h2>One simple structure</h2>
+  <p class="lede">Mentor organises everything into seven layers — from what the business is trying to achieve, all the way down to the people who stay in charge.</p>
+  <div class="stack">
+    <div class="layer"><div class="num" style="color:#fbbf24;border-color:#fbbf2466">1</div><div><div class="lt">Strategy</div><div class="ld">What the business is trying to achieve, and what matters most.</div></div><span class="who">intent</span></div>
+    <div class="layer"><div class="num" style="color:#f472b6;border-color:#f472b666">2</div><div><div class="lt">Governance</div><div class="ld">What it may do on its own, what needs a yes from you, and the lines it never crosses.</div></div><span class="who">guardrails</span></div>
+    <div class="layer"><div class="num" style="color:#a78bfa;border-color:#a78bfa66">3</div><div><div class="lt">Learning</div><div class="ld">Gets better over time — predicting risk and proposing improvements.</div></div><span class="who">improvement</span></div>
+    <div class="layer"><div class="num" style="color:#6d7cff;border-color:#6d7cff66">4</div><div><div class="lt">Core</div><div class="ld">The brain that ties it together and decides what happens next.</div></div><span class="who">reasoning</span></div>
+    <div class="layer"><div class="num" style="color:#34d399;border-color:#34d39966">5</div><div><div class="lt">Agents</div><div class="ld">Specialists that do the actual work, each within its remit.</div></div><span class="who">the doers</span></div>
+    <div class="layer"><div class="num" style="color:#22d3ee;border-color:#22d3ee66">6</div><div><div class="lt">Your things</div><div class="ld">Customers, jobs, assets — as living records that carry their own history.</div></div><span class="who">objects</span></div>
+    <div class="layer"><div class="num" style="color:#fb7185;border-color:#fb718566">7</div><div><div class="lt">People</div><div class="ld">You and your team — approving, overseeing, and stepping in when it counts.</div></div><span class="who">in charge</span></div>
+  </div>
+</section>
+
+<section id="why" class="wrap">
+  <h2>Why it's different</h2>
+  <div class="grid g2">
+    <div class="card"><h3>Built around intent, not forms</h3><p>You tell Mentor what the business is trying to achieve. It works backwards from that, instead of leaving you to drive every screen.</p></div>
+    <div class="card"><h3>You set the rules; trust is earned</h3><p>Everything starts cautious. The AI only earns more independence as it proves itself — and your hard limits are absolute.</p></div>
+    <div class="card"><h3>People stay in the loop</h3><p>Mentor is built to reduce the noise and surface the decisions, not to take humans out of the picture.</p></div>
+    <div class="card"><h3>No lock-in, future-proof</h3><p>It runs on whatever AI engine you choose, and the whole operating model is plain Markdown — readable, portable, yours.</p></div>
+  </div>
+</section>
+
+<section id="start" class="wrap launch">
+  <h2>Get started</h2>
+  <p class="lede">Define your operating model in minutes, see it as a live map, and check it holds together — all in your browser, nothing uploaded.</p>
+  <div class="grid g3">
+    <div class="card">
+      <h3>1 · Build your model</h3>
+      <p>A guided wizard walks you through each layer with plain-English help, then hands you a ready-to-use folder.</p>
+      <a class="btn primary" href="./SetupWizard.html">Open the Setup Wizard →</a>
+    </div>
+    <div class="card">
+      <h3>2 · Map, check &amp; measure</h3>
+      <p>Point Mission Control at your folder to see the whole hierarchy and instantly validate it — or open the Dashboard for a health overview.</p>
+      <a class="btn" href="./MentorTemplate/MissionControl.html">Open Mission Control →</a>
+      <a class="btn" href="./MentorTemplate/Dashboard.html">Open Model Dashboard →</a>
+    </div>
+    <div class="card">
+      <h3>3 · Compile &amp; launch</h3>
+      <p>Turn a finished business folder into engine config — the launch prompt with your model baked in, plus a skill per agent and a setup checklist.</p>
+      <a class="btn" href="./Compiler.html">Open the Compiler →</a>
+    </div>
+  </div>
+  <div class="docs">
+    <span>Go deeper:</span>
+    <a href="./mentor_overview.md">The vision</a>
+    <a href="./mentor_architecture.md">Architecture</a>
+    <a href="./MentorTemplate/_meta/SpecFormat.md">Spec format</a>
+    <a href="./MentorTemplate/_meta/Defaults.md">Recommended defaults</a>
+    <a href="./MentorTemplate/_meta/Playbook.md">Playbook (start here)</a>
+    <a href="./MentorTemplate/_meta/LaunchPrompt.md">Launch prompt</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Mentor · an autonomous operations platform · seven layers of plain Markdown, engine-agnostic.<br>
+    A living operational layer that sits across the business — coordinating, remembering, and helping people make better decisions.
+  </div>
+</footer>
+</body>
+</html>
