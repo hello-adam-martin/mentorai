@@ -1,7 +1,7 @@
 # Mentor — Architecture
 
 **How the whole layered structure is described, and how it is run on an engine.**
-Architecture version 0.2 · Engine-agnostic · Companions: `MentorTemplate/_meta/SpecFormat.md`, `MentorTemplate/_meta/EngineAdapters.md`
+Architecture version 0.2 · Engine-agnostic · Companions: `_meta/SpecFormat.md`, `_meta/EngineAdapters.md`
 
 ---
 
@@ -37,7 +37,7 @@ Mentor has seven layers. Intent and authority flow **down**; state and outcomes 
 
 Every layer, whatever it does, is described by the same envelope — a **descriptor**
 (`id, index, role, kind, status, inputs_from, outputs_to, spec, owns, references, binding`;
-full field definitions in `MentorTemplate/_meta/SpecFormat.md`). The descriptor standardises how layers
+full field definitions in `_meta/SpecFormat.md`). The descriptor standardises how layers
 connect and bind, while each layer keeps its own content file. The full structure is the
 ordered set of descriptors plus the shared id namespaces they reference across layers
 (Strategy owns `objectives`; Governance's actions reference them via `serves`; agents
@@ -61,7 +61,7 @@ you write a new adapter, not a new spec.
 
 Because Mentor specs are already Markdown, most binding is *placement* — a layer's `.md`
 becomes a context file, a memory note, a skill, a scheduled job, or a channel configuration
-in the target engine. See `MentorTemplate/_meta/EngineAdapters.md` for the vocabulary and the concrete
+in the target engine. See `_meta/EngineAdapters.md` for the vocabulary and the concrete
 maps (Hermes Agent today; a template for adding others).
 
 ## Design principles

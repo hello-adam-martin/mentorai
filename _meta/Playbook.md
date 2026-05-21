@@ -108,7 +108,8 @@ Download the engine bundle (ZIP). This is what makes an engine *behave* as Mento
 
 This is where the agents stop being descriptions and start existing. It's software/integration work —
 do it for **one agent's scope only**. Worked example: **Hermes Agent** (for another engine, use
-`_meta/EngineAdapters.md`; for exact commands, the engine's docs).
+`_meta/EngineAdapters.md`; for exact commands, the engine's docs). Running it locally on a Windows
+machine? `_meta/EngineAdapters.md` has a complete step-by-step **"Hermes Agent on WSL" play**.
 
 **Prerequisites:** a validated model + fresh bundle; somewhere to run it (a small VPS or serverless);
 an engine + model-provider API key; credentials for one channel (Telegram is quickest) and read access
