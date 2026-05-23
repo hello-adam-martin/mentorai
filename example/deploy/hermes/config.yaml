@@ -1,0 +1,36 @@
+# Hermes Agent config for Riverside Café.
+# Copy to ~/.hermes/config.yaml. Secrets (API keys, bot token) go in ~/.hermes/.env
+# (see .env.example) — never put secrets here.
+#
+# This file pins the guardrails that DON'T live in the plugin: the native command
+# approval gate, capability-withholding, and gateway access control.
+
+# 1) Model — set the actual model name with the CLI, e.g.:
+#       hermes config set model anthropic/claude-opus-4
+#    Keep the API key in ~/.hermes/.env (ANTHROPIC_API_KEY / OPENROUTER_API_KEY / ...).
+model:
+  provider: anthropic            # anthropic | openrouter | openai | nous | custom
+
+# 2) Native approval gate for dangerous shell/terminal commands.
+#    Start at "manual" for a pilot: always prompt, fail-closed if it times out.
+#    (This complements the mentor-guardrails plugin, which gates business actions.)
+approvals:
+  mode: manual                   # manual | smart | off  — begin at manual
+  timeout: 60
+
+# 3) WITHHOLD capabilities the Front-of-House pilot agent must never have.
+#    The strongest guardrail: a disabled toolset can't be called at all.
+agent:
+  disabled_toolsets:
+    - web                        # no web_search / web_extract for this pilot
+    # add any other toolsets the café agent has no business using
+
+# 4) Gateway access control. NEVER set *_ALLOW_ALL_USERS=true in production.
+#    Unknown DMs must pair (owner approves a code) before they're heard.
+unauthorized_dm_behavior: pair
+
+# 5) Enable the Mentor guardrails plugin (block + audit).
+#    Equivalent CLI:  hermes plugins enable mentor-guardrails
+plugins:
+  enabled:
+    - mentor-guardrails

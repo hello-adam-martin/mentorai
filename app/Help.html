@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mentor — Help &amp; how-to</title>
+<style>
+  :root{
+    --bg:#0b1220; --panel:#101827; --card:#141e30; --border:rgba(148,163,184,.18);
+    --text:#e5edf7; --muted:#93a4b8; --line:rgba(148,163,184,.22);
+    --blue:#6d7cff; --purple:#7c3aed; --green:#34d399; --amber:#fbbf24; --cyan:#22d3ee; --red:#fb7185;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:radial-gradient(1100px 520px at 50% -8%,rgba(109,124,255,.18),transparent 60%),var(--bg);
+    line-height:1.65;-webkit-font-smoothing:antialiased}
+  a{color:#c7ccff;text-decoration:none}
+  a:hover{color:#fff}
+  .wrap{max-width:880px;margin:0 auto;padding:0 24px}
+  .eyebrow{font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  nav{display:flex;justify-content:space-between;align-items:center;padding:20px 0;border-bottom:1px solid var(--border)}
+  .brand{font-weight:800;letter-spacing:-.02em;font-size:17px;display:flex;align-items:center;gap:9px}
+  .brand .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple))}
+  .navlinks{display:flex;gap:18px;font-size:14px;color:var(--muted)}
+  header.top{padding:40px 0 8px}
+  h1{font-size:clamp(30px,5vw,46px);letter-spacing:-.04em;line-height:1.04;margin:10px 0 0}
+  .lede{color:var(--muted);font-size:17px;margin:14px 0 0;max-width:680px}
+  .cta{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 0}
+  .btn{padding:11px 17px;border-radius:13px;font-weight:700;font-size:14px;border:1px solid var(--border);
+    background:rgba(255,255,255,.04);color:var(--text);transition:.15s}
+  .btn:hover{transform:translateY(-1px);border-color:rgba(148,163,184,.4);color:var(--text)}
+  .btn.primary{border:none;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff}
+  section{padding:34px 0;border-top:1px solid var(--border)}
+  h2{font-size:clamp(22px,3vw,28px);letter-spacing:-.03em;margin:0 0 4px}
+  h2 .n{color:var(--blue)}
+  .sub{color:var(--muted);margin:0 0 18px}
+  ol.steps{counter-reset:s;list-style:none;padding:0;margin:0;display:grid;gap:12px}
+  ol.steps li{counter-increment:s;position:relative;padding:14px 16px 14px 54px;border:1px solid var(--border);
+    border-radius:14px;background:var(--card)}
+  ol.steps li::before{content:counter(s);position:absolute;left:14px;top:13px;width:28px;height:28px;border-radius:9px;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;
+    background:rgba(109,124,255,.16);color:#c7ccff;border:1px solid rgba(109,124,255,.4)}
+  ol.steps b{color:#eaf0fa}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:680px){.grid{grid-template-columns:1fr}}
+  .card{border:1px solid var(--border);border-radius:16px;padding:16px 18px;background:var(--card)}
+  .card h3{margin:0 0 4px;font-size:16px;letter-spacing:-.01em}
+  .card .tag{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--cyan)}
+  .card p{margin:8px 0 12px;color:var(--muted);font-size:14px}
+  .card a.btn{font-size:13px;padding:8px 13px}
+  .layers{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+  .layers li{display:flex;gap:13px;align-items:baseline;border:1px solid var(--border);border-radius:12px;padding:10px 14px;background:rgba(255,255,255,.02)}
+  .layers .num{flex-shrink:0;font-weight:800;color:#c7ccff;width:18px}
+  .layers b{color:#eaf0fa}
+  .layers span{color:var(--muted);font-size:14px}
+  .ideas{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .pill{font-size:12.5px;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:6px 13px;background:rgba(255,255,255,.03)}
+  .pill b{color:#eaf0fa}
+  .faq{display:grid;gap:10px}
+  .faq details{border:1px solid var(--border);border-radius:13px;background:var(--card);padding:2px 16px}
+  .faq summary{cursor:pointer;font-weight:700;padding:13px 0;list-style:none;color:#eaf0fa}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::before{content:"+ ";color:var(--blue);font-weight:800}
+  .faq details[open] summary::before{content:"– "}
+  .faq p{margin:0 0 14px;color:var(--muted);font-size:14.5px}
+  .note{border:1px solid rgba(109,124,255,.4);background:rgba(109,124,255,.08);border-radius:14px;padding:14px 16px;color:#cdd7e6;font-size:14.5px}
+  code{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;padding:1px 6px;font-size:.9em;color:#dbe3f0}
+  .docs{display:flex;gap:16px;flex-wrap:wrap;font-size:14.5px;margin-top:6px}
+  .docs a{border-bottom:1px dashed var(--line);padding-bottom:1px}
+  footer{border-top:1px solid var(--border);margin-top:10px;padding:24px 0 50px;color:var(--muted);font-size:13px}
+  p.body{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <div class="brand"><span class="dot"></span> Mentor</div>
+    <div class="navlinks">
+      <a href="../index.html">Home</a>
+      <a href="./Studio.html">Studio</a>
+      <a href="./Docs.html">Docs &amp; Learn</a>
+    </div>
+  </nav>
+</div>
+
+<header class="top wrap">
+  <div class="eyebrow">Mentor · Help &amp; how-to</div>
+  <h1>How to use Mentor</h1>
+  <p class="lede">Mentor turns how your business should run into a small set of Markdown files, then makes an AI engine operate inside those rules. This page is the quick orientation — what to open, the order to do things in, and how to put it live.</p>
+  <div class="cta">
+    <a class="btn primary" href="./Studio.html">Open Mentor Studio →</a>
+    <a class="btn" href="./Docs.html">Docs &amp; Learn →</a>
+  </div>
+</header>
+
+<section class="wrap">
+  <h2><span class="n">1 ·</span> The quick path</h2>
+  <p class="sub">From nothing to a deployable model in one sitting. You don't need every layer to start — Strategy, Governance, and one agent is a complete first pass.</p>
+  <ol class="steps">
+    <li><b>Open Mentor Studio.</b> It's the all-in-one tool. Everything runs in your browser — nothing is uploaded.</li>
+    <li><b>Answer the questions, layer by layer.</b> Studio walks you through each one with plain-English help and pre-fills safe defaults (cautious hard limits, sensible escalations). Fill in what's true for your business.</li>
+    <li><b>Review on “Map &amp; validate”.</b> See your whole model as a live map and confirm the validation panel is green. Click any box to inspect its full definition. Fix anything red before moving on.</li>
+    <li><b>Hit “Download (ready to run)”.</b> You get one self-contained folder — your seven layers, the launch prompt (<code>AGENTS.md</code>), and the agent skills all inside it, plus a <code>DEPLOY.md</code> that says how to run it.</li>
+    <li><b>Put it live on an engine.</b> The download is a self-contained folder — start your engine <b>inside it</b> (with Hermes Agent: <code>cd</code> in and run <code>hermes</code>; it picks up <code>AGENTS.md</code> automatically), then follow the <code>DEPLOY.md</code>. Begin with one agent, everything at <b>recommend</b> — it proposes, you confirm — then widen as it earns trust.</li>
+  </ol>
+  <p class="note" style="margin-top:16px">Coming back to a model you saved? In Studio use <b>“Import an existing folder”</b> to re-open it and map, validate, or recompile — no rebuilding.</p>
+</section>
+
+<section class="wrap">
+  <h2><span class="n">2 ·</span> The tools</h2>
+  <p class="sub">Studio is all most people need. The others are there when you want them.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="tag">Start here</div>
+      <h3>Mentor Studio</h3>
+      <p>Build your model with the guided questions, see it mapped and validated, and download it ready to run — all in one browser page. Also imports an existing folder.</p>
+      <a class="btn primary" href="./Studio.html">Open Studio →</a>
+    </div>
+    <div class="card">
+      <div class="tag">For the terminal</div>
+      <h3>The <code>mentor</code> CLI</h3>
+      <p>The same engine from a command line, and the recommended pipeline once you're deploying: <code>mentor new</code>, <code>validate</code>, <code>compile</code>, <code>ship</code>. Needs Node + <code>npm i js-yaml</code>.</p>
+      <a class="btn" href="../cli/mentor.js">View the CLI</a>
+    </div>
+    <div class="card">
+      <div class="tag">Inspect</div>
+      <h3>Mission Control</h3>
+      <p>Open any business folder to see the seven-layer map, a pass/fail validation panel, and click-to-inspect on every node. A copy travels inside each model you generate.</p>
+      <a class="btn" href="./MissionControl.html">Open Mission Control →</a>
+    </div>
+    <div class="card">
+      <div class="tag">At a glance</div>
+      <h3>Model Dashboard</h3>
+      <p>A quick health read of a model — layers defined, autonomy posture, objective-weight balance, governance coverage, validation status.</p>
+      <a class="btn" href="./Dashboard.html">Open Dashboard →</a>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2><span class="n">3 ·</span> What you're building</h2>
+  <p class="sub">Mentor organises a business into seven layers. Intent flows down; outcomes flow up.</p>
+  <ul class="layers">
+    <li><span class="num">1</span><span><b>Strategy</b> — what the business is trying to achieve, as weighted, measurable objectives.</span></li>
+    <li><span class="num">2</span><span><b>Governance</b> — what the system may do alone, what needs sign-off, and the lines it never crosses.</span></li>
+    <li><span class="num">3</span><span><b>Learning</b> — how it improves: patterns, predictions, simulations.</span></li>
+    <li><span class="num">4</span><span><b>Core</b> — the reasoning engine (chosen, not authored).</span></li>
+    <li><span class="num">5</span><span><b>Domain agents</b> — the specialists that do the work, each scoped to its allowed actions.</span></li>
+    <li><span class="num">6</span><span><b>Operational objects</b> — your real things (customers, jobs, properties…) as living record <i>types</i>.</span></li>
+    <li><span class="num">7</span><span><b>Human collaboration</b> — the people who approve, oversee, and step in.</span></li>
+  </ul>
+  <div class="ideas">
+    <span class="pill"><b>Built around intent</b> — not forms</span>
+    <span class="pill"><b>Autonomy is earned</b> — start cautious, loosen on evidence</span>
+    <span class="pill"><b>Humans stay in the loop</b></span>
+    <span class="pill"><b>Just Markdown</b> — no lock-in, runs on any engine</span>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2><span class="n">4 ·</span> Putting it live</h2>
+  <p class="sub">The “Download (ready to run)” ZIP <b>is</b> your business folder — self-contained and runnable, with the launch prompt (<code>AGENTS.md</code>) sitting inside it alongside the seven layers.</p>
+  <p class="body"><b>Start your engine inside the folder.</b> Open a terminal in the unzipped folder and start your engine there — it loads <code>AGENTS.md</code> from the working directory automatically and reads the layers on demand. With Hermes Agent that's literally <code>cd&nbsp;&lt;your-folder&gt;</code> then <code>hermes</code> (then ask it <i>“what are you optimising for?”</i> as a sanity check).<br><br>
+  <b>Install the skills.</b> Copy the folder's <code>skills/</code> into your engine's skills directory (e.g. <code>~/.hermes/skills/</code>). The <code>DEPLOY.md</code> inside lays out all three steps.</p>
+  <p class="body">Then start small: one agent, one channel, everything at <b>recommend</b>, watching the decision feed — and promote actions to <b>auto</b> only once they've proven safe. The <a href="../_meta/Playbook.md">Playbook</a> walks the whole deployment, and <a href="../_meta/EngineAdapters.md">Engine adapters</a> has a complete worked example for Hermes Agent (including a step-by-step play for running on Windows/WSL).</p>
+</section>
+
+<section class="wrap">
+  <h2><span class="n">5 ·</span> Good to know</h2>
+  <div class="faq">
+    <details><summary>Do I need both the folder and the launch prompt?</summary><p>Yes — and they ship together. The launch prompt (<code>AGENTS.md</code>) only bakes in Strategy and Governance — the things the agent must always have in mind. It reads Operational Objects, Domain agents, Learning, Human Collaboration, and the per-action detail <b>on demand</b> from the folder's files. In the download, the prompt sits <b>inside</b> the folder with the layers, so the folder is the one self-contained thing you run.</p></details>
+    <details><summary>How do I edit a model later?</summary><p>Open Mentor Studio and use <b>“Import an existing folder”</b> to load it. You can re-map, re-validate, and recompile. (The editable folder is also inside the deploy ZIP.)</p></details>
+    <details><summary>Which AI engine does it run on?</summary><p>Any — Mentor is engine-agnostic and entirely Markdown. <a href="../_meta/EngineAdapters.md">Engine adapters</a> maps Mentor's abstract capabilities onto a real engine; Hermes Agent is the worked example. Switching engines means swapping the adapter, not rewriting your model.</p></details>
+    <details><summary>Is anything uploaded to a server?</summary><p>No. Studio, Mission Control, and the Dashboard all run entirely in your browser. The CLI runs on your own machine. Nothing leaves your computer.</p></details>
+    <details><summary>What do the autonomy tiers mean?</summary><p>Every action is one of three: <b>auto</b> (do it now, log why), <b>recommend</b> (propose and wait for a yes), or <b>approve</b> (do nothing until a named person signs off). Start cautious — keep risky or irreversible actions behind <b>approve</b>, and promote toward <b>auto</b> only on evidence. <a href="../_meta/Defaults.md">Recommended defaults</a> has the safe starting set.</p></details>
+    <details><summary>What if validation is red?</summary><p>The map's validation panel lists exactly what's wrong — objective weights that don't sum to 1, a reference that doesn't resolve, a missing governance piece. Fix those before compiling; a model with dangling references will misbehave when it runs.</p></details>
+  </div>
+</section>
+
+<section class="wrap" id="deeper">
+  <h2><span class="n">6 ·</span> Go deeper</h2>
+  <p class="sub">The <a href="./Docs.html">Docs &amp; Learn hub</a> is the full version of this page — concepts, a deep dive on each layer, a start-to-finish tutorial, and every reference rendered for easy reading (no raw Markdown).</p>
+  <div class="docs">
+    <a href="./Docs.html">Docs &amp; Learn hub</a>
+    <a href="./Docs.html#tutorial">Tutorial — build a model</a>
+    <a href="./Docs.html#ref-playbook">Playbook</a>
+    <a href="./Docs.html#ref-specformat">Spec format</a>
+    <a href="./Docs.html#ref-adapters">Engine adapters</a>
+    <a href="./Docs.html#ref-launchprompt">Launch prompt</a>
+    <a href="../docs/overview.md">The vision</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Mentor · seven layers of plain Markdown, engine-agnostic. <a href="../index.html">Back to home</a> · <a href="./Studio.html">Open Studio</a>
+  </div>
+</footer>
+</body>
+</html>

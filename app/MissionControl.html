@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mentor — Mission Control</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+<style>
+  :root{
+    --bg:#0b1220; --panel:#101827; --card:#141e30; --border:rgba(148,163,184,.18);
+    --text:#e5edf7; --muted:#93a4b8; --line:rgba(148,163,184,.30);
+    --blue:#6d7cff; --cyan:#22d3ee; --green:#34d399; --amber:#fbbf24; --pink:#f472b6;
+    --purple:#a78bfa; --red:#fb7185; --slate:#94a3b8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;color:var(--text);
+    background:radial-gradient(circle at 50% 0%,rgba(109,124,255,.16),transparent 34%),var(--bg);
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;}
+  .page{max-width:1180px;margin:0 auto;padding:34px 24px 90px}
+  header .eyebrow{font-size:12px;letter-spacing:.10em;text-transform:uppercase;color:var(--muted)}
+  h1{margin:6px 0 0;font-size:clamp(28px,4vw,44px);letter-spacing:-.04em;line-height:1.05}
+  header p{color:var(--muted);max-width:760px;line-height:1.6;margin:12px 0 0}
+  .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:20px 0 8px}
+  button,.filebtn{color:var(--text);background:rgba(255,255,255,.05);border:1px solid var(--border);
+    padding:11px 15px;border-radius:13px;font-weight:700;font-size:14px;cursor:pointer}
+  .filebtn{background:linear-gradient(135deg,var(--blue),#7c3aed);border:none}
+  .filebtn input{display:none}
+  #drop{margin-top:14px;border:1.5px dashed var(--line);border-radius:18px;padding:26px;text-align:center;
+    color:var(--muted);transition:.15s;background:rgba(255,255,255,.02)}
+  #drop.hot{border-color:var(--blue);background:rgba(109,124,255,.10);color:var(--text)}
+  .status{margin:14px 0 0;color:var(--muted);font-size:13px}
+  .err{color:#fecdd3;background:rgba(251,113,133,.10);border:1px solid rgba(251,113,133,.4);
+    padding:10px 12px;border-radius:10px;margin-top:12px;font-size:13px}
+
+  .layer{position:relative;margin:0 0 14px}
+  .conn{width:2px;height:26px;background:var(--line);margin:0 auto}
+  .layer-box{border:1px solid var(--border);border-radius:20px;padding:16px 18px;
+    background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02))}
+  .layer-head{display:flex;align-items:flex-start;gap:14px}
+  .lv{flex-shrink:0;width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:18px;background:rgba(255,255,255,.05);border:1px solid var(--border)}
+  .layer-head h2{margin:0;font-size:19px;letter-spacing:-.02em}
+  .layer-head .role{color:var(--muted);font-size:13.5px;margin:4px 0 0;line-height:1.5}
+  .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;align-items:center}
+  .pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--border);color:var(--muted)}
+  .pill.green{color:#bbf7d0;border-color:rgba(52,211,153,.45);background:rgba(52,211,153,.10)}
+  .pill.amber{color:#fde68a;border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.10)}
+  .pill.blue{color:#c7ccff;border-color:rgba(109,124,255,.45);background:rgba(109,124,255,.10)}
+  .pill.red{color:#fecdd3;border-color:rgba(251,113,133,.45);background:rgba(251,113,133,.12)}
+  .chip{font-size:10.5px;color:var(--muted);padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid var(--border)}
+
+  .children{margin:14px 0 0;padding-top:14px;border-top:1px solid var(--line);
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+  .node{border:1px solid var(--border);border-radius:14px;padding:12px 13px;background:var(--card)}
+  .node h3{margin:0;font-size:14px;letter-spacing:-.01em}
+  .node .sum{color:var(--muted);font-size:12.5px;margin-top:5px;line-height:1.5}
+  .node .sum b{color:#cdd7e6;font-weight:650}
+  .node ul{margin:6px 0 0;padding-left:16px;color:var(--muted);font-size:12px;line-height:1.5}
+  .node .kids{margin-top:10px;display:grid;gap:8px}
+  .leafrow{font-size:12px;color:var(--muted);padding:6px 9px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.025)}
+  .leafrow b{color:#cdd7e6}
+  .accent{height:3px;border-radius:3px;margin:-12px -13px 10px;border-radius:14px 14px 0 0}
+  .legend{margin-top:8px;color:var(--muted);font-size:11.5px}
+  code{color:#cdd7e6}
+  .vpanel{margin:18px 0 0;border-radius:12px;padding:11px 14px;font-size:13px;line-height:1.55}
+  .vpanel.ok{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.4);color:#bbf7d0}
+  .vpanel.bad{background:rgba(251,113,133,.10);border:1px solid rgba(251,113,133,.4);color:#fecdd3}
+  .vpanel ul{margin:6px 0 0;padding-left:18px}
+  .vpanel b{color:#fff}
+
+  /* click-to-inspect */
+  [data-d]{cursor:pointer;transition:border-color .12s, background .12s}
+  .node[data-d]:hover, .leafrow[data-d]:hover{border-color:var(--blue);background:rgba(109,124,255,.08)}
+  .layer-box[data-d]:hover{box-shadow:0 0 0 1px var(--blue) inset}
+  #d-backdrop{position:fixed;inset:0;background:rgba(4,8,16,.55);opacity:0;pointer-events:none;
+    transition:opacity .18s;z-index:40}
+  #d-backdrop.open{opacity:1;pointer-events:auto}
+  #detail{position:fixed;top:0;right:0;height:100vh;width:min(440px,92vw);z-index:50;
+    background:var(--panel);border-left:1px solid var(--border);box-shadow:-20px 0 50px rgba(0,0,0,.4);
+    transform:translateX(100%);transition:transform .2s ease;overflow:auto;padding:20px 22px 40px}
+  #detail.open{transform:translateX(0)}
+  .d-head{display:flex;align-items:flex-start;gap:12px;justify-content:space-between}
+  .d-titlewrap{min-width:0}
+  .d-type{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan)}
+  #d-title{margin:4px 0 0;font-size:21px;letter-spacing:-.02em;line-height:1.15}
+  .d-path{color:var(--muted);font-size:11.5px;margin-top:5px;word-break:break-all}
+  #d-close{font-size:22px;line-height:1;padding:4px 11px;border-radius:11px;flex-shrink:0}
+  .d-section{margin-top:20px}
+  .d-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+    margin-bottom:8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+  .df-row{display:flex;gap:10px;justify-content:space-between;padding:5px 0;font-size:13px;
+    border-bottom:1px solid rgba(148,163,184,.10)}
+  .df-row.df-block{display:block}
+  .df-key{color:var(--muted);font-weight:650;flex-shrink:0}
+  .df-val{color:var(--text);text-align:right;word-break:break-word}
+  .df-muted{color:var(--muted)}
+  .df-arr{margin:4px 0 2px 8px;display:grid;gap:6px}
+  .df-item{border:1px solid var(--border);border-radius:10px;padding:7px 10px;background:rgba(255,255,255,.025)}
+  .df-li{font-size:12.5px;color:var(--text);padding:3px 9px;border:1px solid var(--border);
+    border-radius:8px;background:rgba(255,255,255,.025)}
+  .df-block .df-row{border-bottom:none}
+  .d-body{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:12.5px;line-height:1.6;color:#cdd7e6;background:var(--card);border:1px solid var(--border);
+    border-radius:12px;padding:13px 14px;margin:0}
+</style>
+</head>
+<body>
+<main class="page">
+  <header>
+    <div class="eyebrow">Mentor · Mission Control</div>
+    <h1 id="title">Mission Control</h1>
+    <p>A live map generated from the files and folders in this Mentor template. Pick this folder (or drag it onto the box) and the page walks every <code>.md</code>, reads its frontmatter, and draws the hierarchy. <b>Click any box</b> to inspect its full definition. Re-pick after edits to refresh.</p>
+    <div class="bar">
+      <label class="filebtn">Select template folder<input id="picker" type="file" webkitdirectory directory multiple></label>
+      <button id="dl" disabled>Download map (HTML)</button>
+      <span class="legend">Browser security means the folder must be chosen once — nothing is uploaded; it all runs locally.</span>
+    </div>
+    <div id="drop">Drop a business folder here</div>
+    <div class="status" id="status"></div>
+    <div id="error"></div>
+  </header>
+  <section id="validation"></section>
+  <section id="map" style="margin-top:26px"></section>
+</main>
+
+<div id="d-backdrop"></div>
+<aside id="detail" aria-hidden="true">
+  <div class="d-head">
+    <div class="d-titlewrap">
+      <span id="d-type" class="d-type"></span>
+      <h2 id="d-title"></h2>
+      <div id="d-path" class="d-path"></div>
+    </div>
+    <button id="d-close" title="Close (Esc)">&times;</button>
+  </div>
+  <div class="d-section">
+    <div class="d-label">Definition — frontmatter</div>
+    <div id="d-fields"></div>
+  </div>
+  <div class="d-section">
+    <div class="d-label">Notes</div>
+    <pre id="d-body" class="d-body"></pre>
+  </div>
+</aside>
+
+<script>
+"use strict";
+const LAYER_COLORS=["#6d7cff","#fbbf24","#f472b6","#a78bfa","#6d7cff","#34d399","#22d3ee","#fb7185"];
+const OPS_OK=new Set([">=","<=",">","<","=="]);
+const TIERS_OK=new Set(["auto","recommend","approve"]);
+const BIND_T=new Set(["durable_context","identity","fact_memory","knowledge_store","procedure","agent","schedule","enforcement","channel","engine"]);
+const BIND_M=new Set(["at_startup","on_demand","scheduled","event"]);
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const dec=s=>String(s==null?"":s).replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&amp;/g,"&");
+const stripNum=n=>n.replace(/^\d+_/,"");
+const byName=(a,b)=>String(a.name).localeCompare(String(b.name),undefined,{numeric:true,sensitivity:"base"});
+
+/* ---------- click-to-inspect registry: every box maps to a node file ---------- */
+let DETAIL=[];
+function dref(file){ if(!file) return ""; DETAIL.push(file); return ` data-d="${DETAIL.length-1}"`; }
+
+/* ---------- input: directory picker ---------- */
+$("#picker").addEventListener("change",e=>{
+  const files=[...e.target.files].filter(f=>f.name.toLowerCase().endsWith(".md"));
+  Promise.all(files.map(f=>f.text().then(t=>({path:f.webkitRelativePath||f.name,text:t})))).then(build).catch(showErr);
+});
+
+/* ---------- input: drag & drop folder ---------- */
+const drop=$("#drop");
+["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("hot");}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("hot");}));
+drop.addEventListener("drop",async e=>{
+  e.preventDefault();
+  const items=[...e.dataTransfer.items].map(i=>i.webkitGetAsEntry&&i.webkitGetAsEntry()).filter(Boolean);
+  const out=[];
+  try{ for(const it of items) await gather(it,"",out); build(out); }catch(err){ showErr(err); }
+});
+async function gather(entry,prefix,out){
+  if(entry.isFile){
+    if(entry.name.toLowerCase().endsWith(".md")){
+      const file=await new Promise((res,rej)=>entry.file(res,rej));
+      const text=await file.text();
+      out.push({path:prefix+entry.name,text});
+    }
+  }else if(entry.isDirectory){
+    const reader=entry.createReader();
+    let batch;
+    do{ batch=await new Promise((res,rej)=>reader.readEntries(res,rej));
+        for(const e of batch) await gather(e,prefix+entry.name+"/",out);
+    }while(batch.length);
+  }
+}
+
+function showErr(err){ $("#error").innerHTML=`<div class="err">Couldn't read the folder: ${esc(err&&err.message||err)}. Try the "Select template folder" button.</div>`; }
+
+/* ---------- parse a markdown file ---------- */
+function parse(text){
+  let fm={}, body=text;
+  const m=text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+  if(m){ try{ fm=jsyaml.load(m[1])||{}; }catch(e){ fm={__error:e.message}; } body=m[2]||""; }
+  const h1=(text.match(/^#\s+(.+)$/m)||[])[1];
+  return {fm,title:h1?dec(h1):h1,body};
+}
+
+/* ---------- build the tree ---------- */
+function build(files){
+  $("#error").innerHTML="";
+  if(!files.length){ showErr({message:"no .md files found"}); return; }
+  if(typeof jsyaml==="undefined"){ showErr({message:"the YAML parser (js-yaml CDN) didn't load — check your connection"}); return; }
+  const root={name:"",dirs:{},files:[]};
+  for(const f of files){
+    const segs=f.path.split("/").filter(Boolean);
+    let node=root;
+    for(let i=0;i<segs.length-1;i++){ const s=segs[i]; node.dirs[s]=node.dirs[s]||{name:s,dirs:{},files:[]}; node=node.dirs[s]; }
+    const p=parse(f.text);
+    node.files.push({name:segs[segs.length-1],path:f.path,...p});
+  }
+  const tplRoot=findTemplateRoot(root)||root;
+  render(tplRoot,files.length);
+}
+function findTemplateRoot(node){
+  if(Object.keys(node.dirs).some(k=>/^\d+_/.test(k))) return node;
+  for(const k in node.dirs){ const r=findTemplateRoot(node.dirs[k]); if(r) return r; }
+  return null;
+}
+
+/* ---------- helpers over a dir ---------- */
+function nodeFileOf(dir){
+  const want=[dir.name, stripNum(dir.name)].map(n=>n+".md");
+  return dir.files.find(f=>want.includes(f.name)) ||
+         dir.files.find(f=>f.fm&&(f.fm.mentor_layer||f.fm.mentor_node||f.fm.mentor)) ||
+         dir.files[0];
+}
+function descendantFms(dir,acc){ acc=acc||[]; dir.files.forEach(f=>f.fm&&acc.push(f.fm)); Object.values(dir.dirs).forEach(d=>descendantFms(d,acc)); return acc; }
+
+/* ---------- summarise a node's frontmatter ---------- */
+function fmt(t){ // a strategic target
+  if(!t) return "";
+  return `${esc(t.metric)} ${esc(t.operator)} ${esc(t.value)}${t.unit?" "+esc(t.unit):""}`;
+}
+function summary(fm){
+  if(!fm) return "";
+  const n=fm.mentor_node, L=fm.mentor_layer;
+  if(L) return `<b>layer</b> · status: ${esc(fm.status||"?")}${fm.weighting?` · Σweights=${esc(fm.weighting.weights_sum_to)}`:""}`;
+  if(n==="objective"){ const t=(fm.targets||[])[0]; return `<b>weight ${esc(fm.weight)}</b>${t?` · ${fmt(t)}`:""}`; }
+  if(n==="action"){ let s=`<b>${esc(fm.tier)}</b>`; if((fm.serves||[]).length)s+=` · serves ${esc(fm.serves.join(", "))}`; if(fm.approver)s+=` · approver: ${esc(fm.approver)}`; if(fm.escalates_to)s+=` · →${esc(fm.escalates_to)}`; return s; }
+  if(n==="approver") return `channels: ${esc((fm.channels||[]).join(", "))} · approves: ${esc((fm.can_approve||[]).join(", "))}`;
+  if(n==="autonomy_tiers") return `tiers: ${esc(Object.keys(fm.tiers||{}).join(" · "))}`;
+  if(n==="notifications") return `channels: ${esc((fm.default_channels||[]).join(", "))}${fm.quiet_hours?` · quiet ${esc(fm.quiet_hours.window||"")}`:""}`;
+  if(n==="audit") return `retain ${esc(fm.retain_days)}d · reasoning: ${esc(fm.require_reasoning)}`;
+  if(n==="domain") return `domain · status: ${esc(fm.status||"?")}`;
+  if(n==="hard_limits"||n==="escalation") return ""; // rendered as list below
+  if(n&&n.endsWith("_index")) return "group";
+  if(fm.mentor==="business") return `business: ${esc(fm.name||"?")}`;
+  return "";
+}
+function listItems(fm){
+  if(!fm) return "";
+  if(fm.mentor_node==="hard_limits") return ul((fm.hard_limits||[]).map(h=>`<b>${esc(h.id)}</b> — ${esc(h.rule)}`));
+  if(fm.mentor_node==="escalation") return ul((fm.escalation||[]).map(x=>`${esc(x.priority)}: ${esc(x.trigger)}`));
+  return "";
+}
+const ul=items=>items.length?`<ul>${items.map(i=>`<li>${i}</li>`).join("")}</ul>`:"";
+
+/* ---------- render a component dir (recursive) ---------- */
+function renderNode(dir){
+  const nf=nodeFileOf(dir);
+  const fm=nf&&nf.fm;
+  const title=(nf&&nf.title)||stripNum(dir.name);
+  const subDirs=Object.values(dir.dirs).sort(byName);
+  const extraFiles=dir.files.filter(f=>f!==nf).sort(byName);
+  let kids="";
+  if(subDirs.length||extraFiles.length){
+    kids=`<div class="kids">`
+      + subDirs.map(renderNode).join("")
+      + extraFiles.map(f=>`<div class="leafrow"${dref(f)}><b>${esc(f.title||f.name)}</b>${summary(f.fm)?" — "+summary(f.fm):""}</div>`).join("")
+      + `</div>`;
+  }
+  return `<div class="node"${dref(nf)}><h3>${esc(title)}</h3>`
+    + (summary(fm)?`<div class="sum">${summary(fm)}</div>`:"")
+    + listItems(fm)
+    + kids
+    + `</div>`;
+}
+
+/* ---------- render the whole map ---------- */
+function render(tpl,count){
+  DETAIL=[];   // reset the click-to-inspect registry for this render
+  // business name
+  let biz=null;
+  (function findBiz(d){ d.files.forEach(f=>{if(f.fm&&f.fm.mentor==="business")biz=f;}); Object.values(d.dirs).forEach(findBiz); })(tpl);
+  const bizName=(biz&&biz.fm&&biz.fm.name)||(biz&&biz.title)||"Mission Control";
+  $("#title").textContent=bizName.replace(/^Mentor —\s*/,"")==="<Business Name>"?"Mentor — Mission Control":bizName;
+
+  // structure index (for role/binding/status by level)
+  let structById={}, structByIdx={};
+  (function findStruct(d){ d.files.forEach(f=>{if(f.fm&&f.fm.mentor==="structure"){(f.fm.layers||[]).forEach(l=>{structById[l.id]=l;structByIdx[l.index]=l;});}}); Object.values(d.dirs).forEach(findStruct); })(tpl);
+
+  // layer folders = numbered dirs, sorted by prefix
+  const layerDirs=Object.values(tpl.dirs).filter(d=>/^\d+_/.test(d.name))
+    .sort((a,b)=>parseInt(a.name)-parseInt(b.name));
+  if(!layerDirs.length){ showErr({message:"no numbered layer folders (1_*, 2_*, …) found"}); return; }
+
+  let html="";
+  layerDirs.forEach((dir,i)=>{
+    const idx=parseInt(dir.name);
+    const nf=nodeFileOf(dir);
+    const fm=nf&&nf.fm||{};
+    const st=structByIdx[idx]||{};
+    const title=(nf&&nf.title)||stripNum(dir.name);
+    const role=st.role||"";
+    const status=fm.status||st.status||"";
+    const color=LAYER_COLORS[(idx-1)%LAYER_COLORS.length];
+    const statusPill=status?`<span class="pill ${status==="defined"?"green":status==="planned"?"amber":"blue"}">${esc(status)}</span>`:"";
+    const bindings=(st.binding||fm.binding||[]).map(b=>`<span class="chip">${esc(b.target||b)}</span>`).join("");
+
+    // strategic-style weight sum across descendant objectives
+    let weightBadge="";
+    const objs=descendantFms(dir).filter(f=>f.mentor_node==="objective");
+    if(objs.length){ const s=Math.round(objs.reduce((a,o)=>a+(+o.weight||0),0)*1000)/1000;
+      weightBadge=`<span class="pill ${Math.abs(s-1)<1e-6?"green":"red"}">Σ weight = ${s}</span>`; }
+
+    // children = component sub-dirs + extra files
+    const subDirs=Object.values(dir.dirs).sort(byName);
+    const extra=dir.files.filter(f=>f!==nf).sort(byName);
+    const children=(subDirs.length||extra.length)
+      ? `<div class="children">${subDirs.map(renderNode).join("")}${extra.map(f=>`<div class="node"${dref(f)}><h3>${esc(f.title||f.name)}</h3>${summary(f.fm)?`<div class="sum">${summary(f.fm)}</div>`:""}${listItems(f.fm)}</div>`).join("")}</div>`
+      : "";
+
+    html+=`${i>0?'<div class="conn"></div>':""}`
+      + `<div class="layer"><div class="layer-box" style="border-color:${color}55">`
+      + `<div class="layer-head">`
+      + `<div class="lv" style="color:${color};border-color:${color}66">${idx}</div>`
+      + `<div style="flex:1"><h2>${esc(title)}</h2>`
+      + (role?`<div class="role">${esc(role)}</div>`:"")
+      + `<div class="meta">${statusPill}${weightBadge}${bindings}</div></div></div>`
+      + children + `</div></div>`;
+  });
+
+  $("#map").innerHTML=html;
+  const nodes=descendantFms(tpl).length;
+  $("#status").textContent=`Mapped ${layerDirs.length} layers · ${nodes} nodes · ${count} markdown files.`;
+  renderValidation(validate(tpl));
+  _lastTitle=$("#title").textContent; $("#dl").disabled=false;
+}
+
+/* ---------- validation: every invariant from _meta/SpecFormat.md ---------- */
+function validate(tpl){
+  const all=descendantFms(tpl).filter(d=>d&&typeof d==="object");
+  const issues=[];
+  const idset=t=>new Set(all.filter(d=>d.mentor_node===t).map(d=>d.id));
+  const obj=idset("objective"),act=idset("action"),appr=idset("approver"),ot=idset("object_type"),dom=idset("domain");
+  all.forEach(d=>{ if(d.__error) issues.push(`YAML parse error: ${d.__error}`); });
+  // Strategic
+  const objs=all.filter(d=>d.mentor_node==="objective");
+  if(objs.length){
+    const strat=all.find(d=>d.mentor_layer==="strategic")||{};
+    const target=(strat.weighting&&strat.weighting.weights_sum_to)||1;
+    const wsum=Math.round(objs.reduce((a,o)=>a+(+o.weight||0),0)*1000)/1000;
+    if(Math.abs(wsum-target)>1e-6) issues.push(`Strategic — objective weights sum to ${wsum}, expected ${target}`);
+    const seen=new Set();
+    objs.forEach(o=>{
+      if(!o.id) issues.push("Strategic — an objective has no id");
+      else if(seen.has(o.id)) issues.push(`Strategic — duplicate objective id "${o.id}"`); else seen.add(o.id);
+      if(typeof o.weight!=="number") issues.push(`Strategic — objective "${o.id||"?"}" weight is not a number`);
+      if(!(o.targets&&o.targets.length)) issues.push(`Strategic — objective "${o.id||"?"}" has no target`);
+      else o.targets.forEach(t=>{ if(!OPS_OK.has(t.operator)) issues.push(`Strategic — "${o.id}" target operator "${t.operator}" invalid`); });
+    });
+  }
+  // Governance
+  all.filter(d=>d.mentor_node==="action").forEach(a=>{
+    if(!TIERS_OK.has(a.tier)) issues.push(`Governance — action "${a.id}" tier "${a.tier}" invalid`);
+    if(a.tier==="approve"&&!appr.has(a.approver)) issues.push(`Governance — approve-action "${a.id}" approver "${a.approver}" not found`);
+    (a.serves||[]).forEach(s=>{ if(!obj.has(s)) issues.push(`Governance — action "${a.id}" serves unknown objective "${s}"`); });
+    if(a.escalates_to&&!act.has(a.escalates_to)) issues.push(`Governance — action "${a.id}" escalates_to unknown "${a.escalates_to}"`);
+  });
+  if(all.find(d=>d.mentor_layer==="governance")){
+    if(!appr.size) issues.push("Governance — no approvers defined");
+    const hl=all.find(d=>d.mentor_node==="hard_limits");
+    if(!(hl&&(hl.hard_limits||[]).length)) issues.push("Governance — hard_limits missing or empty");
+    const aud=all.find(d=>d.mentor_node==="audit");
+    if(aud&&aud.log_all_actions!==true) issues.push("Governance — audit.log_all_actions must be true");
+    if(aud&&aud.require_reasoning!==true) issues.push("Governance — audit.require_reasoning must be true");
+  }
+  // Objects
+  all.filter(d=>d.mentor_node==="object_type").forEach(t=>(t.relationships||[]).forEach(r=>{ if(!ot.has(r&&r.to)) issues.push(`Objects — "${t.id}" relationship to unknown "${r&&r.to}"`); }));
+  // Domain
+  all.filter(d=>d.mentor_node==="agent").forEach(a=>{
+    (a.allowed_actions||[]).forEach(x=>{ if(!act.has(x)) issues.push(`Domain — agent "${a.id}" allowed_action "${x}" not a Governance action`); });
+    (a.objects||[]).forEach(x=>{ if(!ot.has(x)) issues.push(`Domain — agent "${a.id}" object "${x}" not an object type`); });
+    if(a.domain&&!dom.has(a.domain)) issues.push(`Domain — agent "${a.id}" domain "${a.domain}" not a domain`);
+  });
+  // Human
+  all.filter(d=>d.mentor_node==="operator").forEach(o=>(o.fulfils_approvers||[]).forEach(x=>{ if(!appr.has(x)) issues.push(`Human — operator "${o.id}" fulfils_approvers "${x}" not an approver`); }));
+  // Learning
+  all.filter(d=>d.mentor_node==="pattern").forEach(p=>(p.watches||[]).forEach(x=>{ if(!ot.has(x)) issues.push(`Learning — pattern "${p.id}" watches unknown object type "${x}"`); }));
+  all.filter(d=>d.mentor_node==="prediction").forEach(p=>(p.informs||[]).forEach(x=>{ if(!obj.has(x)) issues.push(`Learning — prediction "${p.id}" informs unknown objective "${x}"`); }));
+  all.filter(d=>d.mentor_node==="simulation").forEach(s=>{
+    (s.scores_against||[]).forEach(x=>{ if(!obj.has(x)) issues.push(`Learning — simulation "${s.id}" scores_against unknown objective "${x}"`); });
+    (s.affects_actions||[]).forEach(x=>{ if(!act.has(x)) issues.push(`Learning — simulation "${s.id}" affects_actions unknown action "${x}"`); });
+  });
+  // Structure
+  const structFm=all.find(d=>d&&d.mentor==="structure");
+  if(structFm){
+    const layers=structFm.layers||[];
+    const lids=layers.map(l=>l.id);
+    if(new Set(lids).size!==lids.length) issues.push("Structure — duplicate layer ids");
+    const idxs=layers.map(l=>l.index).slice().sort((a,b)=>a-b);
+    if(JSON.stringify(idxs)!==JSON.stringify(layers.map((_,i)=>i+1))) issues.push("Structure — layer indices not contiguous 1..N");
+    const byId={}; layers.forEach(l=>byId[l.id]=l);
+    const owns={}; layers.forEach(l=>(l.owns||[]).forEach(ns=>owns[ns]=(owns[ns]||0)+1));
+    layers.forEach(l=>{
+      (l.inputs_from||[]).forEach(s=>{ if(!byId[s]) issues.push(`Structure — ${l.id}.inputs_from unknown "${s}"`); else if(byId[s].index>=l.index) issues.push(`Structure — ${l.id}.inputs_from "${s}" must be above it`); });
+      (l.outputs_to||[]).forEach(o=>{ const t=typeof o==="string"?o:o&&o.layer; if(!byId[t]) issues.push(`Structure — ${l.id}.outputs_to unknown "${t}"`); else if(byId[t].index<=l.index) issues.push(`Structure — ${l.id}.outputs_to "${t}" must be below it`); });
+      (l.references||[]).forEach(ns=>{ if(!owns[ns]) issues.push(`Structure — ${l.id}.references "${ns}" owned by no layer`); });
+      (l.binding||[]).forEach(b=>{ if(!BIND_T.has(b.target)) issues.push(`Structure — ${l.id} binding target "${b.target}" invalid`); if(!BIND_M.has(b.mode)) issues.push(`Structure — ${l.id} binding mode "${b.mode}" invalid`); });
+    });
+  } else issues.push("Structure — _meta/Structure.md not found");
+  return issues;
+}
+function renderValidation(issues){
+  const box=$("#validation"); if(!box) return;
+  if(!issues.length){ box.className="vpanel ok"; box.innerHTML="&#10003; <b>Valid</b> — all checks pass."; }
+  else { box.className="vpanel bad"; box.innerHTML=`<b>&#9888; ${issues.length} issue${issues.length>1?"s":""} to fix</b><ul>${issues.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>`; }
+}
+
+/* ---------- click-to-inspect: detail drawer ---------- */
+function renderFields(obj){
+  if(obj==null) return "";
+  if(Array.isArray(obj)){
+    if(!obj.length) return `<span class="df-val df-muted">[ ]</span>`;
+    return `<div class="df-arr">`+obj.map(it=>
+      (it&&typeof it==="object")
+        ? `<div class="df-item">${renderFields(it)}</div>`
+        : `<div class="df-li">${esc(String(it))}</div>`
+    ).join("")+`</div>`;
+  }
+  if(typeof obj==="object"){
+    return Object.entries(obj).map(([k,v])=>
+      (v&&typeof v==="object")
+        ? `<div class="df-row df-block"><div class="df-key">${esc(k)}</div>${renderFields(v)}</div>`
+        : `<div class="df-row"><span class="df-key">${esc(k)}</span><span class="df-val">${esc(String(v))}</span></div>`
+    ).join("");
+  }
+  return `<span class="df-val">${esc(String(obj))}</span>`;
+}
+function typeLabel(fm){
+  if(!fm) return "node";
+  if(fm.mentor_layer) return "layer · "+fm.mentor_layer;
+  if(fm.mentor==="business") return "business";
+  if(fm.mentor==="structure") return "structure";
+  return fm.mentor_node || "node";
+}
+function openDetail(file){
+  if(!file) return;
+  const fm=file.fm||{};
+  $("#d-title").textContent=file.title||file.name||"Node";
+  $("#d-type").textContent=typeLabel(fm);
+  $("#d-path").textContent=file.path||"";
+  const keys=Object.keys(fm).filter(k=>k!=="__error");
+  $("#d-fields").innerHTML = fm.__error
+    ? `<div class="err">YAML parse error: ${esc(fm.__error)}</div>`
+    : (keys.length?renderFields(fm):`<div class="df-muted">No frontmatter.</div>`);
+  const body=(file.body||"").trim();
+  $("#d-body").textContent = body || "—";
+  $("#detail").classList.add("open"); $("#d-backdrop").classList.add("open");
+}
+function closeDetail(){ $("#detail").classList.remove("open"); $("#d-backdrop").classList.remove("open"); }
+$("#map").addEventListener("click",e=>{
+  const el=e.target.closest("[data-d]"); if(!el) return;
+  openDetail(DETAIL[+el.getAttribute("data-d")]);
+});
+$("#d-close").addEventListener("click",closeDetail);
+$("#d-backdrop").addEventListener("click",closeDetail);
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeDetail(); });
+
+/* ---------- export the rendered map to a standalone HTML file ---------- */
+let _lastTitle="Mentor — Mission Control";
+$("#dl").addEventListener("click",()=>{
+  if($("#dl").disabled) return;
+  const css=document.querySelector("style").textContent;
+  const doc=`<!DOCTYPE html>\n<html lang="en"><head><meta charset="UTF-8">`
+    +`<meta name="viewport" content="width=device-width, initial-scale=1.0">`
+    +`<title>${esc(_lastTitle)}</title><style>${css}</style></head>`
+    +`<body><main class="page"><header><div class="eyebrow">Mentor · Mission Control</div>`
+    +`<h1>${esc(_lastTitle)}</h1>`
+    +`<p style="color:var(--muted)">Static snapshot generated ${new Date().toISOString().slice(0,10)}.</p></header>`
+    +`<div class="${$("#validation").className}">${$("#validation").innerHTML}</div>`
+    +`<section id="map" style="margin-top:18px">${$("#map").innerHTML.replace(/ data-d="\d+"/g,"")}</section></main></body></html>`;
+  const blob=new Blob([doc],{type:"text/html"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=(_lastTitle.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"mission-control")+".html";
+  a.click(); URL.revokeObjectURL(a.href);
+});
+</script>
+</body>
+</html>

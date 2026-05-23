@@ -1,0 +1,41 @@
+{
+  "_comment": "BUSINESS-NEUTRAL Hermes detection library. It holds NO business rules. It only describes how to RECOGNISE a category of tool call in Hermes (the engine-specific bit that can't live in an engine-neutral model). The actual rules — which limits exist, tiers, approvers, caps — are read LIVE from your model's Governance layer at runtime. A detector is attached to a Governance hard limit (or approve-tier action) when that rule's text contains the detector's keywords. Edit your Governance Markdown to change rules; edit THIS only to teach Hermes new tool-call shapes. Patterns are regex, matched case-insensitively against the tool NAME (tool_patterns) and the JSON-serialised ARGS (arg_patterns).",
+  "approval_keys": ["approved_by", "_approved_by", "approval"],
+  "detectors": [
+    {
+      "id": "money",
+      "keywords": ["money", "refund", "payout", "payment", "invoice"],
+      "tool_patterns": ["refund", "payout", "payment", "\\bcharge\\b", "transfer", "stripe", "\\bpos\\b", "invoice"],
+      "arg_patterns": ["refund", "payout", "\\bcomp\\b"],
+      "action": "require_approval"
+    },
+    {
+      "id": "data",
+      "keywords": ["personal", "customer data", "third part", "privacy", "share data"],
+      "tool_patterns": ["email", "\\bsend\\b", "http", "webhook", "upload", "export"],
+      "arg_patterns": ["customer", "email", "phone", "loyalty", "personal"],
+      "action": "require_approval"
+    },
+    {
+      "id": "destructive",
+      "keywords": ["delete", "destroy", "irreversib", "permanent", "erase", "wipe"],
+      "tool_patterns": ["terminal", "shell", "bash", "\\bdelete\\b", "\\bdrop\\b", "destroy"],
+      "arg_patterns": ["rm\\s+-rf?", "\\bDROP\\s+TABLE\\b", "\\bDELETE\\s+FROM\\b", "truncate", "--force\\b", "\\bmkfs\\b"],
+      "action": "block"
+    },
+    {
+      "id": "public",
+      "keywords": ["public", "media", "press", "publicly", "statement"],
+      "tool_patterns": ["\\bpost\\b", "tweet", "publish", "instagram", "facebook", "social", "press"],
+      "arg_patterns": [],
+      "action": "require_approval"
+    },
+    {
+      "id": "legal",
+      "keywords": ["legal", "binding", "commitment", "contract", "agreement"],
+      "tool_patterns": ["contract", "\\bsign\\b", "agreement", "docusign"],
+      "arg_patterns": [],
+      "action": "require_approval"
+    }
+  ]
+}

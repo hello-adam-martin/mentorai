@@ -1,0 +1,12 @@
+name: mentor-guardrails
+version: 0.1.0
+description: >-
+  Enforces a Mentor model's Governance layer on Hermes Agent. A pre_tool_call hook blocks
+  hard-limit violations and gates approve-tier actions; a post_tool_call hook writes an
+  append-only audit log. It reads the rules LIVE from the model's Governance layer at runtime
+  (no per-business rules file) — only the engine-specific detection patterns live here, in
+  detectors.json. Capability-withholding (the strongest limit) is config.yaml
+  agent.disabled_toolsets. See README.md.
+provides_hooks:
+  - pre_tool_call
+  - post_tool_call

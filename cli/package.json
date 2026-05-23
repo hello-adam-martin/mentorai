@@ -1,0 +1,9 @@
+{
+  "name": "mentor-cli",
+  "version": "0.1.0",
+  "description": "Command-line pipeline for Mentor operating models (build, validate, compile, ship) on mentor-core.js.",
+  "bin": { "mentor": "mentor.js" },
+  "main": "mentor-core.js",
+  "dependencies": { "js-yaml": "^4.1.0" },
+  "license": "MIT"
+}
